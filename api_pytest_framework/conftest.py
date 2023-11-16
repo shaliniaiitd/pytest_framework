@@ -1,18 +1,11 @@
-import pytest
-import os
+
 import logging
 from logging.handlers import RotatingFileHandler
 
 from configparser import RawConfigParser
-from dotenv import load_dotenv, find_dotenv
 import json
 from dotenv import dotenv_values
-
 import os
-import base64
-from datetime import datetime
-from PIL import Image
-from io import BytesIO
 import pytest
 
 REPORT_PATH = "reports"
@@ -28,12 +21,9 @@ def pytest_runtest_makereport(item):
     if report.when == "call":
         feature_request = item.funcargs['request']
 
-        # Assuming you have the image content in a variable (replace this with the actual variable)
         image_content = feature_request.config.cache.get("image_content", None)
         file_name = feature_request.config.cache.get("image_file", None)
         img_path = os.path.join(REPORT_PATH, "images", file_name)
-
-
         extra.append(pytest_html.extras.image(image_content, ''))
 
     report.extra = extra
@@ -41,10 +31,6 @@ def pytest_runtest_makereport(item):
 @pytest.fixture(scope='class')
 def read_test_data(request,test_data_file_name):
     test_data = []
-    # if  request.config.getoption("--test_data-file"):
-    #      log_filename = request.config.getoption("--log-file")
-    # else:
-    #      log_filename = 'default.log'
     if os.path.exists(test_data_file_name):
         with open(test_data_file_name, 'r') as data_file:
             json_test_data = json.dumps(data_file)
@@ -86,7 +72,7 @@ def read_config(request):
     request.config.cache.set("pytest_ini", pytest_config)
 
 
-@pytest.fixture(scope='class')
+@pytest.fixture(scope='session')
 def read_dot_env(request):
     #load_dotenv(find_dotenv())
     # Load environment variables from the .env file into a dictionary
