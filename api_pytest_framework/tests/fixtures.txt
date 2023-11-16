@@ -1,0 +1,127 @@
+============================= test session starts =============================
+platform win32 -- Python 3.11.3, pytest-7.3.2, pluggy-1.0.0
+rootdir: C:\Users\Shalini_Agarwal\PycharmProjects\pythonProject2\pytest_framework\tests
+plugins: anyio-4.0.0, base-url-2.0.0, playwright-0.3.3
+collected 4 items
+cache -- ...\_pytest\cacheprovider.py:510
+    Return a cache object that can persist state between testing sessions.
+
+capsysbinary -- ...\_pytest\capture.py:1001
+    Enable bytes capturing of writes to ``sys.stdout`` and ``sys.stderr``.
+
+capfd -- ...\_pytest\capture.py:1029
+    Enable text capturing of writes to file descriptors ``1`` and ``2``.
+
+capfdbinary -- ...\_pytest\capture.py:1057
+    Enable bytes capturing of writes to file descriptors ``1`` and ``2``.
+
+capsys -- ...\_pytest\capture.py:973
+    Enable text capturing of writes to ``sys.stdout`` and ``sys.stderr``.
+
+doctest_namespace [session scope] -- ...\_pytest\doctest.py:737
+    Fixture that returns a :py:class:`dict` that will be injected into the
+    namespace of doctests.
+
+pytestconfig [session scope] -- ...\_pytest\fixtures.py:1360
+    Session-scoped fixture that returns the session's :class:`pytest.Config`
+    object.
+
+record_property -- ...\_pytest\junitxml.py:282
+    Add extra properties to the calling test.
+
+record_xml_attribute -- ...\_pytest\junitxml.py:305
+    Add extra xml attributes to the tag for the calling test.
+
+record_testsuite_property [session scope] -- ...\_pytest\junitxml.py:343
+    Record a new ``<property>`` tag as child of the root ``<testsuite>``.
+
+tmpdir_factory [session scope] -- ...\_pytest\legacypath.py:302
+    Return a :class:`pytest.TempdirFactory` instance for the test session.
+
+tmpdir -- ...\_pytest\legacypath.py:309
+    Return a temporary directory path object which is unique to each test
+    function invocation, created as a sub directory of the base temporary
+    directory.
+
+caplog -- ...\_pytest\logging.py:498
+    Access and control log capturing.
+
+monkeypatch -- ...\_pytest\monkeypatch.py:30
+    A convenient fixture for monkey-patching.
+
+recwarn -- ...\_pytest\recwarn.py:30
+    Return a :class:`WarningsRecorder` instance that records all warnings emitted by test functions.
+
+tmp_path_factory [session scope] -- ...\_pytest\tmpdir.py:245
+    Return a :class:`pytest.TempPathFactory` instance for the test session.
+
+tmp_path -- ...\_pytest\tmpdir.py:260
+    Return a temporary directory path object which is unique to each test
+    function invocation, created as a sub directory of the base temporary
+    directory.
+
+
+------------------ fixtures defined from anyio.pytest_plugin ------------------
+anyio_backend [module scope] -- ..\..\..\..\AppData\Local\Programs\Python\Python311\Lib\site-packages\anyio\pytest_plugin.py:127
+    no docstring available
+
+anyio_backend_name -- ..\..\..\..\AppData\Local\Programs\Python\Python311\Lib\site-packages\anyio\pytest_plugin.py:132
+    no docstring available
+
+anyio_backend_options -- ..\..\..\..\AppData\Local\Programs\Python\Python311\Lib\site-packages\anyio\pytest_plugin.py:140
+    no docstring available
+
+
+---------------- fixtures defined from pytest_base_url.plugin -----------------
+base_url [session scope] -- ..\..\..\..\AppData\Local\Programs\Python\Python311\Lib\site-packages\pytest_base_url\plugin.py:11
+    Return a base URL
+
+
+---------- fixtures defined from pytest_playwright.pytest_playwright ----------
+browser_type_launch_args [session scope] -- ..\..\..\..\AppData\Local\Programs\Python\Python311\Lib\site-packages\pytest_playwright\pytest_playwright.py:124
+    no docstring available
+
+browser_context_args [session scope] -- ..\..\..\..\AppData\Local\Programs\Python\Python311\Lib\site-packages\pytest_playwright\pytest_playwright.py:169
+    no docstring available
+
+playwright [session scope] -- ..\..\..\..\AppData\Local\Programs\Python\Python311\Lib\site-packages\pytest_playwright\pytest_playwright.py:190
+    no docstring available
+
+browser_type [session scope] -- ..\..\..\..\AppData\Local\Programs\Python\Python311\Lib\site-packages\pytest_playwright\pytest_playwright.py:197
+    no docstring available
+
+launch_browser [session scope] -- ..\..\..\..\AppData\Local\Programs\Python\Python311\Lib\site-packages\pytest_playwright\pytest_playwright.py:202
+    no docstring available
+
+browser [session scope] -- ..\..\..\..\AppData\Local\Programs\Python\Python311\Lib\site-packages\pytest_playwright\pytest_playwright.py:215
+    no docstring available
+
+context -- ..\..\..\..\AppData\Local\Programs\Python\Python311\Lib\site-packages\pytest_playwright\pytest_playwright.py:223
+    no docstring available
+
+page -- ..\..\..\..\AppData\Local\Programs\Python\Python311\Lib\site-packages\pytest_playwright\pytest_playwright.py:297
+    no docstring available
+
+is_webkit [session scope] -- ..\..\..\..\AppData\Local\Programs\Python\Python311\Lib\site-packages\pytest_playwright\pytest_playwright.py:303
+    no docstring available
+
+is_firefox [session scope] -- ..\..\..\..\AppData\Local\Programs\Python\Python311\Lib\site-packages\pytest_playwright\pytest_playwright.py:308
+    no docstring available
+
+is_chromium [session scope] -- ..\..\..\..\AppData\Local\Programs\Python\Python311\Lib\site-packages\pytest_playwright\pytest_playwright.py:313
+    no docstring available
+
+browser_name [session scope] -- ..\..\..\..\AppData\Local\Programs\Python\Python311\Lib\site-packages\pytest_playwright\pytest_playwright.py:318
+    no docstring available
+
+browser_channel [session scope] -- ..\..\..\..\AppData\Local\Programs\Python\Python311\Lib\site-packages\pytest_playwright\pytest_playwright.py:333
+    no docstring available
+
+device [session scope] -- ..\..\..\..\AppData\Local\Programs\Python\Python311\Lib\site-packages\pytest_playwright\pytest_playwright.py:338
+    no docstring available
+
+delete_output_dir [session scope] -- ..\..\..\..\AppData\Local\Programs\Python\Python311\Lib\site-packages\pytest_playwright\pytest_playwright.py:40
+    no docstring available
+
+
+============================ no tests ran in 0.09s ============================
