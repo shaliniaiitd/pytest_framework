@@ -1,0 +1,60 @@
+import os
+import base64
+import requests
+import json
+
+JIRA_BASE_URL = os.getenv("JIRA_BASE_URL", "https://sciencelogic.atlassian.net")
+
+
+def _get_auth_header():
+    """Build Jira Cloud Basic Auth header from email + API token."""
+    email = os.getenv("JIRA_EMAIL")
+    token = os.getenv("JIRA_TOKEN")
+
+    if not email or not token:
+        raise ValueError("JIRA_EMAIL and JIRA_TOKEN environment variables must be set.")
+
+    auth_str = f"{email}:{token}"
+    b64_auth = base64.b64encode(auth_str.encode()).decode()
+    return {"Authorization": f"Basic {b64_auth}"}
+
+
+def get_execution_summary_from_jira(execution_key):
+    """Fetch summary for an Xray execution issue."""
+    url = f"{JIRA_BASE_URL}/rest/api/3/issue/{execution_key}"
+    headers = {"Accept": "application/json", **_get_auth_header()}
+
+    response = requests.get(url, headers=headers)
+    if response.status_code != 200:
+        raise RuntimeError(
+            f"Failed to fetch issue {execution_key}. "
+            f"Status {response.status_code}: {response.text}"
+        )
+
+    data = response.json()
+    return data["fields"]["summary"]
+
+
+def set_execution_summary(execution_key, new_summary):
+    """Update the summary field of an Xray execution issue."""
+    url = f"{JIRA_BASE_URL}/rest/api/3/issue/{execution_key}"
+    headers = {
+        "Accept": "application/json",
+        "Content-Type": "application/json",
+        **_get_auth_header(),
+    }
+
+    payload = {"fields": {"summary": new_summary}}
+
+    try:
+        response = requests.put(url, headers=headers, json=payload)
+        if response.status_code == 204:
+            print(f"✅ Successfully updated summary for {execution_key}")
+            return True
+        else:
+            print(f"⚠️ Failed to update summary ({response.status_code}): {response.text}")
+            return False
+
+    except requests.exceptions.RequestException as e:
+        print(f"⚠️ Network error while updating Jira issue: {e}")
+        return False
