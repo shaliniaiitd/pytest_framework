@@ -1,0 +1,6 @@
+. Run with updating xray execution
+```
+# Upload results to new test execution:
+pytest --jira-xray --cloud  --client-secret-auth
+# Upload results to existing test execution:
+pytest --jira-xray --cloud --client-secret-auth --execution XRAY-40781 --allow-duplicate-ids --env=hardening
