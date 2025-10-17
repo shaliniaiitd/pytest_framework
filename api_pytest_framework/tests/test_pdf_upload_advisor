@@ -1,0 +1,167 @@
+'''Tests service for ingesting Powerflow documents for Skylar Ai Advisor.'''
+
+import pytest
+import requests
+import os
+
+@pytest.fixture
+def request_setup(get_env_data):
+    namespace = get_env_data["NAMESPACE"]
+    api_key = get_env_data["SKYLAR_API_KEY"]
+    sl_url = f"https://{namespace}.qa.zebrium.com/api/v1/skylar-knowledge/"
+
+    header = {"Authorization": f"x-sl-ap-api-key {api_key}"}
+
+    yield {"url": sl_url,"header": header}
+
+@pytest.mark.xray("XRAY-41292")
+@pytest.mark.positive
+def test_get_health_endpoint(request_setup):
+
+    response = requests.get( url=f'{request_setup["url"]}health', headers=request_setup["header"])
+
+    assert response.status_code == 200
+
+    expected_resp = {"apiVersion": {"name": "skylar-powerflow-api", "desc": "Doc ingestion for Advisor",
+                                    "time": "2025-09-24 22:10:43.147387977 +0000 UTC m=+80122.588602862"}}
+
+    resp = response.json()
+    assert resp["apiVersion"].keys() == expected_resp["apiVersion"].keys()
+    assert resp["apiVersion"]["name"] == expected_resp["apiVersion"]["name"]
+    assert resp["apiVersion"]["desc"] == expected_resp["apiVersion"]["desc"]
+
+
+@pytest.mark.xray("XRAY-41691")
+@pytest.mark.positive
+def test_upload_pdf(request_setup, request):
+    repo_root = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+    file_path = os.path.join(repo_root, "adobe-88KB.pdf")
+
+    header = {'Content-Type': 'application/octet-stream',
+    'sky-source': 'XRAY-41292-test',
+    'sky-file-location': '/curl/oct-strm/',
+    'sky-file-name': 'adobe-88KB.pdf' }
+
+    headers = {**request_setup["header"], **header}
+
+    # Open the PDF in binary mode
+    with open(file_path, "rb") as f:
+
+        response = requests.post(url=request_setup["url"], headers=headers, data=f)
+
+    assert response.status_code == 200
+    resp = response.json()
+
+    assert len(resp.keys()) == 8
+    assert resp["filename"] == "adobe-88KB.pdf"
+    assert resp["status"] == "uploaded"
+    assert resp["success"]
+    assert resp["error"] == {}
+
+    request.config.cache.set("docID", resp["docID"])
+
+
+@pytest.mark.xray("XRAY-41690")
+@pytest.mark.positive
+def test_get_single_document_by_id(request_setup,request):
+
+    docID = request.config.cache.get("docID", None)
+    header = {"sky-document-id": request.config.cache.get("docID", None)}
+
+    headers = {**request_setup["header"],**header }
+
+    response = requests.get(request_setup["url"],headers=headers)
+
+    assert response.status_code == 200
+
+    resp = response.json()
+
+    assert len(resp.keys()) == 6
+    assert resp["status"] == "read_ok"
+    assert len(resp["data"][0].keys()) == 4
+    assert resp["data"][0]["docID"] == docID #read the uploaded document
+    assert resp["error"] == {}
+
+@pytest.mark.xray("XRAY-41698")
+#@pytest.mark.skip
+@pytest.mark.positive
+def test_get_single_document_by_source_location_filename(request_setup, request):
+
+    docID = request.config.cache.get("docID",None)
+
+    header = {
+    'sky-source': 'XRAY-41292-test',
+    'sky-file-location': '/curl/oct-strm/',
+    'sky-file-name': 'adobe-88KB.pdf' }
+
+    headers = {**request_setup["header"], **header}
+
+    response = requests.get(request_setup["url"], headers=headers)
+
+    assert response.status_code == 200
+
+    resp = response.json()
+
+    assert len(resp.keys()) == 6
+    assert resp["status"] == "read_ok"
+    assert len(resp["data"][0].keys()) == 4
+    assert resp["data"][0]["docID"] == docID  # read the uploaded document
+    assert resp["error"] == {}
+
+
+@pytest.mark.xray("XRAY-41697")
+@pytest.mark.positive
+def test_delete_single_doc(request_setup, request):
+
+    docID = request.config.cache.get("docID", None)
+    header = {"sky-document-id": request.config.cache.get("docID", None)}
+
+    headers = {**request_setup["header"], **header}
+
+    response = requests.delete(request_setup["url"], headers=headers)
+
+    assert response.status_code == 200
+
+    resp = response.json()
+
+    assert len(resp.keys()) == 6
+    assert resp["status"] == "deleted"
+    assert resp["error"] == {}
+
+
+@pytest.mark.xray("XRAY-41693")
+@pytest.mark.negative
+@pytest.mark.parametrize("headers", [{},{'Authorization': 'x-sl-ap-api-key ooNG-some-invalid-token-xyZ'} ])
+def test_get_health_status_without_access_token(request_setup,headers):
+    response = requests.get(request_setup["url"], headers = headers)
+
+    assert response.status_code == 401
+
+
+@pytest.mark.xray("XRAY-41694", "XRAY-41695")
+@pytest.mark.negative
+@pytest.mark.parametrize("header",[{'sky-document-id': 'skd_non_existent'},
+                                   {'sky-source': 'some_invalid_source', 'sky-file-location': 'some_invalid_location', 'sky-file-name':'some_invalid_filename'}] )
+def test_get_single_doc(request_setup, header):
+    headers = {**request_setup["header"], **header}
+
+    response = requests.get(request_setup["url"], headers=headers)
+
+    assert response.json()["status"] == "file_not_found"
+
+
+@pytest.mark.xray("XRAY-41697","XRAY-41696")
+@pytest.mark.negative
+@pytest.mark.parametrize("header",[{'sky-document-id': 'skd_non_existent'},
+                                   {'sky-source': 'some_invalid_source', 'sky-file-location': 'some_invalid_location', 'sky-file-name':'some_invalid_filename'}] )
+def test_delete_single_doc(request_setup, header):
+    headers = {**request_setup["header"], **header}
+
+    response = requests.delete(request_setup["url"], headers=headers)
+
+    resp = response.json()
+
+    assert resp["status"] == "Error"
+    assert resp["success"] == False
+    assert resp["error"] == {"errorCode":"document_not_found","errorRef":"@DF.J2"}
+
