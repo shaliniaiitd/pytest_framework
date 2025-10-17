@@ -20,7 +20,7 @@ pytest-check==2.2.2
 pytest-html==4.1.1
 pytest-metadata==3.0.0
 pytest-playwright==0.3.3
-pytest-jira-xray
+pytest-jira-xray>=0.9.3
 python-dateutil==2.8.2
 python-dotenv==1.0.0
 python-json-logger==2.0.7
