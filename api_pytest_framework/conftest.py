@@ -97,6 +97,106 @@ def pytest_addoption(parser):
 def test_data_file_name(request):
     request.cls.test_data_file_name = request.config.getoption("--test-data-file")
 
+##SKY
+    import os
+import subprocess
+
+import pytest
+from dotenv import load_dotenv, dotenv_values
+from clickhouse_driver import Client as ClickHouseClient
+from clickhouse_driver.errors import NetworkError
+import time
+import re
+import paramiko
+
+# Get env data from .env
+@pytest.fixture(scope="session")
+def get_env_data():
+    env_file = ".env"
+    load_dotenv(dotenv_path= env_file, override=True)
+
+    return dotenv_values(env_file)
+
+
+
+# Port-forwarding
+@pytest.fixture(scope="session")
+def clickhouse_port_forward(get_env_data):
+    """Set up port-forwarding to Clickhouse pod in Kubernetes"""
+    try:
+        # Get Clickhouse pod name
+        cmd = f"kubectl get pods -n {get_env_data['NAMESPACE']} --selector={get_env_data['CLICKHOUSE_SELECTOR']} -o=jsonpath='{{.items[0].metadata.name}}'"
+        pod_name = subprocess.check_output(cmd, shell=True).decode().strip()
+
+        # Start port-forward
+        port_forward = subprocess.Popen(
+            ["kubectl", "port-forward", "-n", get_env_data['NAMESPACE'], pod_name, f"{get_env_data['CLICKHOUSE_PORT']}:9000"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE
+        )
+
+        # Wait for connection
+        time.sleep(15)
+        yield
+
+        # Cleanup
+        port_forward.terminate()
+
+    except Exception as e:
+        pytest.skip(f"Could not establish port-forward: {str(e)}")
+
+
+# Clickhouse Client
+@pytest.fixture(scope="session")
+def clickhouse_client(clickhouse_port_forward, get_env_data):
+    """Create ClickHouse Client Connection"""
+    client = ClickHouseClient(
+        host=get_env_data['CLICKHOUSE_HOST'],
+        port=get_env_data['CLICKHOUSE_PORT'],
+        user=get_env_data['CLICKHOUSE_USER'],
+        password=get_env_data['CLICKHOUSE_PASSWORD'],
+        settings={'use_numpy': False}
+    )
+
+    try:
+        client.execute("SELECT 1")  # Test Connection
+    except NetworkError as e:
+        pytest.skip(f"Count not connect to Clickhouse: {str(e)}")
+
+    return client
+
+
+# Connect to SSH Client
+@pytest.fixture(scope="session")
+def get_ssh_client(get_env_data):
+    ssh_host = get_env_data["SSH_HOST"]
+    ssh_port = get_env_data["SSH_PORT"]
+    ssh_user = get_env_data["SSH_USER"]
+    ssh_password = get_env_data["SSH_PASSWORD"]
+    pem_file = get_env_data["PEM_FILE"]
+
+    ssh = paramiko.SSHClient()
+    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+
+    if (pem_file):
+        # Load the PEM key
+        key = paramiko.RSAKey.from_private_key_file(pem_file)
+        ssh.connect(hostname=ssh_host, username=ssh_user, pkey=key)
+        print(f"ssh successfully to {ssh_host} using aws.pem!")
+
+    else:
+        ssh.connect(hostname=ssh_host, username=ssh_user, password=ssh_password)
+        print("ssh successfully to {ssh_host} using password!")
+
+    yield ssh
+
+    # Cleanup
+    ssh.close()
+
+
+
+
+
 
 #
 #
